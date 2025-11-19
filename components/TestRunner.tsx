@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Flag, CheckCircle, ChevronRight, ChevronLeft, XOctagon, Sun, Moon } from 'lucide-react';
+import { Clock, Flag, CheckCircle, ChevronRight, ChevronLeft, XOctagon, Sun, Moon, Menu, X } from 'lucide-react';
 import { TestResult } from '../types';
 
 interface TestRunnerProps {
@@ -48,6 +48,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
   const [timeLeft, setTimeLeft] = useState(3600); // 60 minutes for a real mock feel
   const [flagged, setFlagged] = useState<string[]>([]);
   const [startTime] = useState(Date.now());
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // Timer Logic
   useEffect(() => {
@@ -125,28 +126,85 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
     }
   };
 
+  const PaletteContent = () => (
+    <>
+      <h3 className="font-mono text-xs text-zinc-500 mb-4 tracking-widest uppercase">Question Palette</h3>
+      <div className="grid grid-cols-5 md:grid-cols-4 gap-2">
+        {MOCK_QUESTIONS.map((q, idx) => {
+          const isAnswered = selectedOptions[q.id] !== undefined;
+          const isFlagged = flagged.includes(q.id);
+          const isCurrent = idx === currentQIndex;
+          
+          let bgClass = 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500';
+          if (isCurrent) bgClass = 'ring-1 ring-emerald-500 text-emerald-600 dark:text-emerald-500 bg-zinc-50 dark:bg-zinc-900';
+          else if (isFlagged) bgClass = 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-600 text-yellow-600 dark:text-yellow-500';
+          else if (isAnswered) bgClass = 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-600 text-emerald-600 dark:text-emerald-500';
+
+          return (
+            <button
+              key={q.id}
+              onClick={() => {
+                setCurrentQIndex(idx);
+                setIsMobileSidebarOpen(false);
+              }}
+              className={`
+                h-10 w-10 rounded-sm border flex items-center justify-center font-mono text-sm transition-all
+                ${bgClass}
+              `}
+            >
+              {idx + 1}
+            </button>
+          );
+        })}
+      </div>
+      
+      <div className="mt-8 space-y-2">
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+          <div className="w-3 h-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-600"></div> Answered
+        </div>
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+          <div className="w-3 h-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-600"></div> Mark for Review
+        </div>
+        <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
+          <div className="w-3 h-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"></div> Not Visited
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-800 dark:text-zinc-300 flex flex-col relative overflow-hidden transition-colors duration-300">
       {/* Green Grid Overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,0,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,0,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none z-0"></div>
 
       {/* Header / Status Bar */}
-      <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur flex items-center justify-between px-6 z-20 relative transition-colors duration-300">
-        <div className="flex items-center gap-4">
-          <div className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tracking-widest">MOCK_TEST: <span className="text-emerald-600 dark:text-emerald-500">GEN_AWARENESS_01</span></div>
+      <header className="h-16 border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-950/80 backdrop-blur flex items-center justify-between px-4 md:px-6 z-20 relative transition-colors duration-300">
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Mobile Menu Toggle */}
+          <button 
+            className="lg:hidden p-2 -ml-2 text-zinc-500"
+            onClick={() => setIsMobileSidebarOpen(true)}
+          >
+            <Menu className="w-6 h-6" />
+          </button>
+          
+          <div className="font-mono font-bold text-zinc-900 dark:text-zinc-100 tracking-widest text-xs md:text-base flex items-center gap-2">
+            <span className="hidden md:inline">MOCK_TEST:</span> 
+            <span className="text-emerald-600 dark:text-emerald-500 truncate max-w-[150px] md:max-w-none">GEN_AWARENESS_01</span>
+          </div>
         </div>
         
         <div className={`
-          flex items-center gap-3 font-mono text-xl font-bold px-4 py-1 rounded-sm border transition-colors duration-300
+          flex items-center gap-2 md:gap-3 font-mono text-sm md:text-xl font-bold px-2 md:px-4 py-1 rounded-sm border transition-colors duration-300
           ${isCriticalTime 
             ? 'text-red-600 dark:text-red-500 border-red-500/50 bg-red-50 dark:bg-red-950/20 animate-pulse' 
             : 'text-emerald-600 dark:text-emerald-500 border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20'}
         `}>
-          <Clock className="w-5 h-5" />
+          <Clock className="w-4 h-4 md:w-5 md:h-5" />
           {formatTime(timeLeft)}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
            {toggleTheme && (
             <button 
               onClick={toggleTheme}
@@ -157,89 +215,69 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
            )}
           <button 
             onClick={handleAbort}
-            className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-red-600 dark:hover:text-red-500 transition-colors uppercase tracking-wider"
+            className="flex items-center gap-2 text-[10px] md:text-xs font-mono text-zinc-500 hover:text-red-600 dark:hover:text-red-500 transition-colors uppercase tracking-wider"
           >
             <XOctagon className="w-4 h-4" />
-            Abort Exam
+            <span className="hidden md:inline">Abort Exam</span>
+            <span className="inline md:hidden">Abort</span>
           </button>
         </div>
       </header>
 
       {/* Main Interface */}
-      <main className="flex-1 flex z-20 relative">
+      <main className="flex-1 flex z-20 relative overflow-hidden">
         
-        {/* Question Sidebar */}
-        <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black p-4 hidden lg:block transition-colors duration-300">
-          <h3 className="font-mono text-xs text-zinc-500 mb-4 tracking-widest uppercase">Question Palette</h3>
-          <div className="grid grid-cols-4 gap-2">
-            {MOCK_QUESTIONS.map((q, idx) => {
-              const isAnswered = selectedOptions[q.id] !== undefined;
-              const isFlagged = flagged.includes(q.id);
-              const isCurrent = idx === currentQIndex;
-              
-              let bgClass = 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500';
-              if (isCurrent) bgClass = 'ring-1 ring-emerald-500 text-emerald-600 dark:text-emerald-500 bg-zinc-50 dark:bg-zinc-900';
-              else if (isFlagged) bgClass = 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-600 text-yellow-600 dark:text-yellow-500';
-              else if (isAnswered) bgClass = 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-600 text-emerald-600 dark:text-emerald-500';
-
-              return (
-                <button
-                  key={q.id}
-                  onClick={() => setCurrentQIndex(idx)}
-                  className={`
-                    h-10 w-10 rounded-sm border flex items-center justify-center font-mono text-sm transition-all
-                    ${bgClass}
-                  `}
-                >
-                  {idx + 1}
-                </button>
-              );
-            })}
-          </div>
-          
-          <div className="mt-8 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-              <div className="w-3 h-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-600"></div> Answered
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-              <div className="w-3 h-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-600"></div> Mark for Review
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-zinc-500">
-              <div className="w-3 h-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"></div> Not Visited
-            </div>
-          </div>
+        {/* Sidebar - Desktop */}
+        <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black p-4 hidden lg:block transition-colors duration-300 h-full overflow-y-auto">
+           <PaletteContent />
         </aside>
 
+        {/* Sidebar - Mobile Drawer */}
+        {isMobileSidebarOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMobileSidebarOpen(false)}></div>
+            <aside className="absolute left-0 top-0 bottom-0 w-3/4 max-w-sm bg-white dark:bg-black border-r border-zinc-200 dark:border-zinc-800 p-6 overflow-y-auto shadow-2xl animate-in slide-in-from-left duration-200">
+              <div className="flex justify-between items-center mb-6">
+                <span className="font-mono font-bold text-zinc-900 dark:text-white">NAVIGATION</span>
+                <button onClick={() => setIsMobileSidebarOpen(false)}>
+                  <X className="w-6 h-6 text-zinc-500" />
+                </button>
+              </div>
+              <PaletteContent />
+            </aside>
+          </div>
+        )}
+
         {/* Question Area */}
-        <section className="flex-1 p-6 lg:p-12 overflow-y-auto">
-          <div className="max-w-3xl mx-auto">
+        <section className="flex-1 p-4 md:p-6 lg:p-12 overflow-y-auto">
+          <div className="max-w-3xl mx-auto pb-20">
             
             {/* Question Card */}
             <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-sm p-1 shadow-lg dark:shadow-[0_0_15px_rgba(0,0,0,0.5)] transition-colors duration-300">
                {/* Card Header Strip */}
-               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-transparent mb-6"></div>
+               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-transparent mb-4 md:mb-6"></div>
                
-               <div className="px-6 pb-8">
-                 <div className="flex justify-between items-start mb-6">
+               <div className="px-4 md:px-6 pb-6 md:pb-8">
+                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
                    <span className="font-mono text-emerald-600 dark:text-emerald-500 text-sm tracking-widest">Q_ID: {MOCK_QUESTIONS[currentQIndex].id.toUpperCase()}</span>
                    <button 
                       onClick={toggleFlag}
-                      className={`flex items-center gap-2 text-xs font-mono uppercase tracking-wider border px-3 py-1 rounded-sm transition-all
+                      className={`w-full sm:w-auto flex items-center justify-center gap-2 text-xs font-mono uppercase tracking-wider border px-3 py-2 rounded-sm transition-all
                         ${flagged.includes(MOCK_QUESTIONS[currentQIndex].id) 
                           ? 'border-yellow-500 text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-500/10' 
                           : 'border-zinc-300 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400 dark:hover:border-zinc-600'}
                       `}
                    >
                      <Flag className="w-3 h-3" />
-                     {flagged.includes(MOCK_QUESTIONS[currentQIndex].id) ? 'Marked for Review' : 'Mark for Review'}
+                     {flagged.includes(MOCK_QUESTIONS[currentQIndex].id) ? 'Marked' : 'Mark for Review'}
                    </button>
                  </div>
 
-                 <h2 className="text-xl lg:text-2xl font-medium text-zinc-900 dark:text-zinc-100 mb-8 leading-relaxed transition-colors duration-300">
+                 <h2 className="text-lg md:text-xl lg:text-2xl font-medium text-zinc-900 dark:text-zinc-100 mb-8 leading-relaxed transition-colors duration-300">
                    {MOCK_QUESTIONS[currentQIndex].text}
                  </h2>
 
-                 <div className="space-y-4">
+                 <div className="space-y-3 md:space-y-4">
                    {MOCK_QUESTIONS[currentQIndex].options.map((option, idx) => {
                      const isSelected = selectedOptions[MOCK_QUESTIONS[currentQIndex].id] === idx;
                      return (
@@ -247,7 +285,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
                         key={idx}
                         onClick={() => handleOptionSelect(idx)}
                         className={`
-                          relative p-4 border rounded-sm cursor-pointer transition-all group
+                          relative p-3 md:p-4 border rounded-sm cursor-pointer transition-all group
                           ${isSelected 
                             ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-500 shadow-md dark:shadow-[0_0_10px_rgba(16,185,129,0.2)]' 
                             : 'bg-zinc-50 dark:bg-black border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600'}
@@ -255,7 +293,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
                        >
                          <div className="flex items-center gap-4">
                            <div className={`
-                             w-5 h-5 rounded-full border flex items-center justify-center transition-colors
+                             w-5 h-5 rounded-full border flex items-center justify-center transition-colors shrink-0
                              ${isSelected ? 'border-emerald-500 bg-emerald-500' : 'border-zinc-400 dark:border-zinc-600 group-hover:border-zinc-600 dark:group-hover:border-zinc-400'}
                            `}>
                              {isSelected && <div className="w-2 h-2 bg-white dark:bg-black rounded-full"></div>}
@@ -278,9 +316,9 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
               <button 
                 onClick={() => setCurrentQIndex(Math.max(0, currentQIndex - 1))}
                 disabled={currentQIndex === 0}
-                className="flex items-center gap-2 px-6 py-3 border border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-xs hover:bg-zinc-100 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-2 px-4 md:px-6 py-3 border border-zinc-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono text-xs hover:bg-zinc-100 dark:hover:bg-zinc-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-sm"
               >
-                <ChevronLeft className="w-4 h-4" /> PREVIOUS
+                <ChevronLeft className="w-4 h-4" /> <span className="hidden sm:inline">PREVIOUS</span>
               </button>
 
               {currentQIndex === MOCK_QUESTIONS.length - 1 ? (
@@ -290,16 +328,16 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDa
                        handleSubmit();
                      }
                    }}
-                   className="flex items-center gap-2 px-8 py-3 bg-emerald-600 dark:bg-emerald-600 text-white dark:text-black font-mono font-bold text-xs hover:bg-emerald-500 transition-colors shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                   className="flex items-center gap-2 px-6 md:px-8 py-3 bg-emerald-600 dark:bg-emerald-600 text-white dark:text-black font-mono font-bold text-xs hover:bg-emerald-500 transition-colors shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.4)] rounded-sm"
                  >
                    <CheckCircle className="w-4 h-4" /> SUBMIT_TEST
                  </button>
               ) : (
                 <button 
                   onClick={() => setCurrentQIndex(Math.min(MOCK_QUESTIONS.length - 1, currentQIndex + 1))}
-                  className="flex items-center gap-2 px-6 py-3 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-xs hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-500 transition-all"
+                  className="flex items-center gap-2 px-4 md:px-6 py-3 border border-zinc-300 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 font-mono text-xs hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-500 transition-all rounded-sm"
                 >
-                  NEXT <ChevronRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">NEXT</span> <ChevronRight className="w-4 h-4" />
                 </button>
               )}
             </div>
