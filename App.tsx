@@ -5,13 +5,15 @@ import { ExamGrid } from './components/ExamGrid';
 import { TestRunner } from './components/TestRunner';
 import { LoginDialog } from './components/LoginDialog';
 import { Dashboard } from './components/Dashboard';
-import { ViewState, User } from './types';
+import { ResultCard } from './components/ResultCard';
+import { ViewState, User, TestResult } from './types';
 
 const App: React.FC = () => {
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
   const [isDark, setIsDark] = useState(true);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [lastTestResult, setLastTestResult] = useState<TestResult | null>(null);
 
   useEffect(() => {
     if (isDark) {
@@ -31,11 +33,14 @@ const App: React.FC = () => {
   };
 
   const handleExitSimulation = () => {
-    const confirmExit = window.confirm("WARNING: ABORTING SIMULATION WILL FORFEIT PROGRESS. CONFIRM?");
-    if (confirmExit) {
-      // Return to dashboard if logged in, else landing
-      setView(user ? ViewState.DASHBOARD : ViewState.LANDING);
-    }
+    // Return to dashboard if logged in, else landing
+    setView(user ? ViewState.DASHBOARD : ViewState.LANDING);
+  };
+
+  const handleTestComplete = (result: TestResult) => {
+    setLastTestResult(result);
+    setView(ViewState.RESULT);
+    window.scrollTo(0, 0);
   };
 
   const toggleTheme = () => {
@@ -120,7 +125,20 @@ const App: React.FC = () => {
       )}
 
       {view === ViewState.RUNNER && (
-        <TestRunner onExit={handleExitSimulation} isDark={isDark} toggleTheme={toggleTheme} />
+        <TestRunner 
+          onExit={handleExitSimulation} 
+          onComplete={handleTestComplete}
+          isDark={isDark} 
+          toggleTheme={toggleTheme} 
+        />
+      )}
+
+      {view === ViewState.RESULT && lastTestResult && (
+        <ResultCard 
+          result={lastTestResult}
+          onHome={handleNavigateHome}
+          onRetry={handleStartSimulation}
+        />
       )}
     </div>
   );

@@ -18,6 +18,7 @@ export enum ViewState {
   LANDING = 'LANDING',
   DASHBOARD = 'DASHBOARD',
   RUNNER = 'RUNNER',
+  RESULT = 'RESULT',
 }
 
 export interface TerminalLog {
@@ -41,4 +42,14 @@ export interface RecommendedItem {
   examId: string;
   difficulty: string;
   time: string;
+}
+
+export interface TestResult {
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  unattempted: number;
+  score: number; // Percentage
+  accuracy: number; // Percentage
+  timeTaken: number; // Seconds
 }

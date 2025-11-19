@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Flag, CheckCircle, ChevronRight, ChevronLeft, XOctagon, Sun, Moon } from 'lucide-react';
+import { TestResult } from '../types';
 
 interface TestRunnerProps {
   onExit: () => void;
+  onComplete: (result: TestResult) => void;
   isDark?: boolean;
   toggleTheme?: () => void;
 }
@@ -40,16 +42,23 @@ const MOCK_QUESTIONS = [
   },
 ];
 
-export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, isDark, toggleTheme }) => {
+export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, onComplete, isDark, toggleTheme }) => {
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<{[key: string]: number}>({});
   const [timeLeft, setTimeLeft] = useState(3600); // 60 minutes for a real mock feel
   const [flagged, setFlagged] = useState<string[]>([]);
+  const [startTime] = useState(Date.now());
 
   // Timer Logic
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleSubmit(); // Auto submit
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -69,6 +78,51 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, isDark, toggleTh
   const toggleFlag = () => {
     const qId = MOCK_QUESTIONS[currentQIndex].id;
     setFlagged(prev => prev.includes(qId) ? prev.filter(id => id !== qId) : [...prev, qId]);
+  };
+
+  const handleSubmit = () => {
+    const endTime = Date.now();
+    const timeTakenInSeconds = Math.floor((endTime - startTime) / 1000);
+    
+    let correctCount = 0;
+    let wrongCount = 0;
+    let unattemptedCount = 0;
+
+    MOCK_QUESTIONS.forEach(q => {
+      const userChoice = selectedOptions[q.id];
+      if (userChoice === undefined) {
+        unattemptedCount++;
+      } else if (userChoice === q.correct) {
+        correctCount++;
+      } else {
+        wrongCount++;
+      }
+    });
+
+    const totalQuestions = MOCK_QUESTIONS.length;
+    // Simple percentage score
+    const score = Math.round((correctCount / totalQuestions) * 100);
+    // Accuracy: Correct / Attempted
+    const attempted = correctCount + wrongCount;
+    const accuracy = attempted === 0 ? 0 : (correctCount / attempted) * 100;
+
+    const result: TestResult = {
+      totalQuestions,
+      correctAnswers: correctCount,
+      wrongAnswers: wrongCount,
+      unattempted: unattemptedCount,
+      score,
+      accuracy,
+      timeTaken: timeTakenInSeconds
+    };
+
+    onComplete(result);
+  };
+
+  const handleAbort = () => {
+    if (window.confirm("WARNING: ABORTING SIMULATION WILL FORFEIT PROGRESS. CONFIRM?")) {
+      onExit();
+    }
   };
 
   return (
@@ -102,7 +156,7 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, isDark, toggleTh
             </button>
            )}
           <button 
-            onClick={onExit}
+            onClick={handleAbort}
             className="flex items-center gap-2 text-xs font-mono text-zinc-500 hover:text-red-600 dark:hover:text-red-500 transition-colors uppercase tracking-wider"
           >
             <XOctagon className="w-4 h-4" />
@@ -230,9 +284,16 @@ export const TestRunner: React.FC<TestRunnerProps> = ({ onExit, isDark, toggleTh
               </button>
 
               {currentQIndex === MOCK_QUESTIONS.length - 1 ? (
-                 <button className="flex items-center gap-2 px-8 py-3 bg-emerald-600 dark:bg-emerald-600 text-white dark:text-black font-mono font-bold text-xs hover:bg-emerald-500 transition-colors shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.4)]">
-                 <CheckCircle className="w-4 h-4" /> SUBMIT_TEST
-               </button>
+                 <button 
+                   onClick={() => {
+                     if (window.confirm("CONFIRM SUBMISSION: Are you sure you want to finish the exam?")) {
+                       handleSubmit();
+                     }
+                   }}
+                   className="flex items-center gap-2 px-8 py-3 bg-emerald-600 dark:bg-emerald-600 text-white dark:text-black font-mono font-bold text-xs hover:bg-emerald-500 transition-colors shadow-lg dark:shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                 >
+                   <CheckCircle className="w-4 h-4" /> SUBMIT_TEST
+                 </button>
               ) : (
                 <button 
                   onClick={() => setCurrentQIndex(Math.min(MOCK_QUESTIONS.length - 1, currentQIndex + 1))}
