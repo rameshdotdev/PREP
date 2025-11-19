@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>REVOLT SYSTEM // EXAM PREP PROTOCOL</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+      /* Custom Scrollbar for Webkit */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #09090b; 
+      }
+      .dark ::-webkit-scrollbar-track {
+        background: #09090b;
+      }
+      :not(.dark) ::-webkit-scrollbar-track {
+        background: #f4f4f5;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #a1a1aa; 
+        border-radius: 2px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #27272a;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: #10b981; 
+      }
+      
+      /* Scanline Animation */
+      @keyframes scanline {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 0% 100%; }
+      }
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.2) 50%,
+          rgba(0,0,0,0.2)
+        );
+        background-size: 100% 4px;
+        animation: scanline 0.2s linear infinite;
+        pointer-events: none;
+      }
+      /* Adjust scanlines for light mode */
+      :not(.dark) .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(0,0,0,0),
+          rgba(0,0,0,0) 50%,
+          rgba(0,0,0,0.05) 50%,
+          rgba(0,0,0,0.05)
+        );
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              zinc: {
+                950: '#09090b', // Surface Dark
+              },
+              emerald: {
+                500: '#10b981', // Neon Emerald
+              },
+              fuchsia: {
+                500: '#d946ef', // Electric Fuchsia
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+            backgroundImage: {
+              'grid-pattern': "linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px)",
+              'grid-pattern-light': "linear-gradient(to right, #e4e4e7 1px, transparent 1px), linear-gradient(to bottom, #e4e4e7 1px, transparent 1px)",
+            }
+          }
+        }
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-zinc-50 dark:bg-black text-zinc-800 dark:text-zinc-400 selection:bg-emerald-500 selection:text-white dark:selection:text-black overflow-x-hidden transition-colors duration-300">
+    <div id="root"></div>
+  </body>
+</html>
